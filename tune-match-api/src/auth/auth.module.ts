@@ -4,12 +4,12 @@ import { AuthController } from './auth.controller';
 import { SpotifyOauthStrategy } from './strategies/spotify-oauth.strategy';
 import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
-import { JwtStrategy } from './strategies/jwt.strategy';
 import { ConfigService } from '@nestjs/config';
+import { JwtStrategy } from './strategies/jwt.strategy';
 
 @Module({
   imports: [
-    PassportModule,
+    PassportModule.register({ session: true }),
     JwtModule.registerAsync({
       useFactory: async () => {
         return {
