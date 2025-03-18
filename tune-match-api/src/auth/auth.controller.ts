@@ -1,7 +1,8 @@
 import { Controller, Get, Req, Res, UseGuards } from '@nestjs/common';
-import { AuthService } from './auth.service';
-import { Profile } from 'passport-spotify';
 import { Response } from 'express';
+import { AuthService } from './auth.service';
+import { SpotifyOauthGuard } from './guards/spotify-oauth.guard';
+import { Profile } from 'passport-spotify';
 
 @Controller('auth')
 export class AuthController {
@@ -9,7 +10,7 @@ export class AuthController {
 
   @UseGuards(SpotifyOauthGuard)
   @Get('login')
-  login() {
+  login(): void {
     return;
   }
 
