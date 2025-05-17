@@ -23,6 +23,7 @@ export class SpotifyOauthStrategy extends PassportStrategy(
           'playlist-modify-public',
           'playlist-modify-private',
           'streaming',
+          'user-read-playback-position',
         ],
       },
       (

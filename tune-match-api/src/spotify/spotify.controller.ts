@@ -3,6 +3,8 @@ import {
   Get,
   UnauthorizedException,
   Headers,
+  Query,
+  Param,
 } from '@nestjs/common';
 import { SpotifyService } from './spotify.service';
 
@@ -11,20 +13,10 @@ export class SpotifyController {
   constructor(private readonly spotifyService: SpotifyService) {}
 
   @Get('top-tracks')
-  async getTopTracks(@Headers('authorization') authHeader: string) {
-    if (!authHeader) {
-      throw new UnauthorizedException('No Authorization Header');
-    }
-    const token = authHeader.split(' ')[1];
-    if (!token) {
-      throw new UnauthorizedException('Invalid token format');
-    }
-    console.log('Bearer token:', token);
-    return this.spotifyService.getTopTracks(token);
-  }
-
-  @Get('recommendations')
-  async getRecommendations(@Headers('authorization') authHeader: string) {
+  async getTopTracks(
+    @Headers('authorization') authHeader: string,
+    @Query('time-range') timeRange: string,
+  ) {
     if (!authHeader) {
       throw new UnauthorizedException('No Authorization Header');
     }
@@ -33,11 +25,14 @@ export class SpotifyController {
       throw new UnauthorizedException('Invalid token format');
     }
 
-    return this.getRecommendations(token);
+    return this.spotifyService.getTopTracks(token, timeRange);
   }
 
   @Get('top-artists')
-  async getTopArtists(@Headers('authorization') authHeader: string) {
+  async getTopArtists(
+    @Headers('authorization') authHeader: string,
+    @Query('time-range') timeRange: string,
+  ) {
     if (!authHeader) {
       throw new UnauthorizedException('No Authorization Header');
     }
@@ -46,6 +41,6 @@ export class SpotifyController {
       throw new UnauthorizedException('Invalid token format');
     }
 
-    return await this.spotifyService.getTopArtists(token);
+    return await this.spotifyService.getTopArtists(token, timeRange);
   }
 }

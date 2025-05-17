@@ -3,40 +3,39 @@ import axios from 'axios';
 
 @Injectable()
 export class SpotifyService {
-  async getTopTracks(accessToken: string) {
+  async getTopTracks(accessToken: string, timeRange: string) {
     const response = await axios.get(
       'https://api.spotify.com/v1/me/top/tracks',
       {
         params: {
           limit: 5,
-          time_range: 'short_term',
+          time_range: timeRange,
         },
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
       },
     );
-    return response.data;
+    const topTracksData: Array<any> = response.data.items;
+    const topTracksAndIds = topTracksData.map((e) => {
+      const artists = e.artists.map((artist) => artist.name);
+
+      return {
+        trackName: e.name,
+        trackId: e.id,
+        trackArtists: artists,
+      };
+    });
+    return topTracksAndIds;
   }
 
-  async getRecommendations(accessToken: string) {
-    const response = await axios.get(
-      'https://api.spotify.com/v1/me/top/tracks',
-      {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      },
-    );
-  }
-
-  async getTopArtists(accessToken: string) {
+  async getTopArtists(accessToken: string, timeRange: string) {
     const response = await axios.get(
       'https://api.spotify.com/v1/me/top/artists',
       {
         params: {
           limit: 5,
-          time_range: 'short_term',
+          time_range: timeRange,
         },
         headers: {
           Authorization: `Bearer ${accessToken}`,
@@ -44,6 +43,9 @@ export class SpotifyService {
       },
     );
 
-    return response.data;
+    const topArtistsData: Array<any> = response.data.items;
+    const topArtistsAndIds = topArtistsData.map((e) => [e.name, e.id]);
+
+    return topArtistsAndIds;
   }
 }
