@@ -48,9 +48,12 @@ export class AuthController {
 
     res.set('authorization', `Bearer ${jwt}`);
     const userData: UserDto = {
+      _id: user.id,
       username: user.username,
       displayName: user.displayName,
       country: user.country,
+      accessToken: authInfo.accessToken,
+      refreshToken: authInfo.refreshToken,
     };
     await this.userService.createUser(userData);
 

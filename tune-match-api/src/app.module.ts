@@ -7,6 +7,7 @@ import { SpotifyService } from './spotify/spotify.service';
 import { SpotifyController } from './spotify/spotify.controller';
 import { MongooseModule } from '@nestjs/mongoose';
 import { UserModule } from './user/user.module';
+import { SpotifyModule } from './spotify/spotify.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { UserModule } from './user/user.module';
     }),
     AuthModule,
     UserModule,
+    SpotifyModule,
   ],
   controllers: [AppController, SpotifyController],
   providers: [AppService, SpotifyService],
