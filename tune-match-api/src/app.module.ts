@@ -8,6 +8,8 @@ import { SpotifyController } from './spotify/spotify.controller';
 import { MongooseModule } from '@nestjs/mongoose';
 import { UserModule } from './user/user.module';
 import { SpotifyModule } from './spotify/spotify.module';
+import { ScheduledTasksModule } from './scheduled-tasks/scheduled-tasks.module';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
@@ -19,9 +21,11 @@ import { SpotifyModule } from './spotify/spotify.module';
         uri: `mongodb${configService.get<string>('DB_URL_MODIFIER') || ''}://${configService.get<string>('DB_USERNAME')}:${configService.get<string>('DB_PASSWORD')}@${configService.get<string>('DB_CLUSTER')}/?retryWrites=true&w=majority`,
       }),
     }),
+    ScheduleModule.forRoot(),
     AuthModule,
     UserModule,
     SpotifyModule,
+    ScheduledTasksModule,
   ],
   controllers: [AppController, SpotifyController],
   providers: [AppService, SpotifyService],

@@ -13,7 +13,7 @@ import { SpotifyModule } from 'src/spotify/spotify.module';
     SpotifyModule,
   ],
   providers: [UserService],
-  exports: [UserService],
+  exports: [UserService, MongooseModule],
   controllers: [UserController],
 })
 export class UserModule {}
