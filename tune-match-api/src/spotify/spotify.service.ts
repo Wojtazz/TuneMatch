@@ -44,7 +44,12 @@ export class SpotifyService {
     );
 
     const topArtistsData: Array<any> = response.data.items;
-    const topArtistsAndIds = topArtistsData.map((e) => [e.name, e.id]);
+    const topArtistsAndIds = topArtistsData.map((e) => {
+      return {
+        artistName: e.name,
+        artistId: e.id,
+      };
+    });
 
     return topArtistsAndIds;
   }

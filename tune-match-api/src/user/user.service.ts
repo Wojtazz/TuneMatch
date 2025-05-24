@@ -38,9 +38,9 @@ export class UserService {
         );
 
         artists.map((e) => {
-          if (!topArtistsNames.includes(e[0])) {
+          if (!topArtistsNames.includes(e.artistName)) {
             topArtists.push(e);
-            topArtistsNames.push(e[0]);
+            topArtistsNames.push(e.artistName);
           }
         });
         tracks.map((e) => {
@@ -51,8 +51,28 @@ export class UserService {
         });
       }),
     );
-    userData.topArtists = topArtists;
-    userData.topTracks = topTracks;
+
+    const user = await this.userModel.findById(userData._id);
+    if (user) {
+      const userTopTracksIds = user.topTracks.map((track) => track['trackId']);
+      const filteredTopTracks = topTracks.filter(
+        (track) => !userTopTracksIds.includes(track.trackId),
+      );
+
+      const userTopARtistsIds = user.topArtists.map(
+        (artist) => artist['artistId'],
+      );
+      const filteredTopArtists = topArtists.filter(
+        (artist) => !userTopARtistsIds.includes(artist.artistId),
+      );
+
+      userData.topArtists = [...user.topArtists, ...filteredTopArtists];
+      userData.topTracks = [...user.topTracks, ...filteredTopTracks];
+    } else {
+      userData.topArtists = topArtists;
+      userData.topTracks = topTracks;
+    }
+
     const updatedUser = await this.userModel.findOneAndUpdate(
       { _id: userData._id },
       userData,
