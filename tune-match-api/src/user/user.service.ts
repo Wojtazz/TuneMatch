@@ -7,6 +7,9 @@ import { HttpService } from '@nestjs/axios';
 import { firstValueFrom } from 'rxjs';
 import { SpotifyService } from 'src/spotify/spotify.service';
 import { staticConfig } from 'src/config/static-config';
+import { TicketmasterService } from 'src/ticketmaster/ticketmaster.service';
+import { SharedService } from 'src/shared/shared.service';
+import { Concert } from 'src/ticketmaster/ticketmaster.interface';
 
 @Injectable()
 export class UserService {
@@ -14,6 +17,8 @@ export class UserService {
     @InjectModel('User') private readonly userModel: Model<User>,
     private readonly httpService: HttpService,
     private readonly spotifyService: SpotifyService,
+    private readonly ticketmasterService: TicketmasterService,
+    private readonly sharedService: SharedService,
   ) {}
 
   async createUser(userData: UserDto): Promise<User> {
@@ -86,6 +91,23 @@ export class UserService {
     return updatedUser;
   }
 
+  async updateUser(
+    userId: string,
+    updates: Partial<User> | any,
+  ): Promise<User> {
+    const updatedUser = await this.userModel.findByIdAndUpdate(
+      userId,
+      updates,
+      { new: true },
+    );
+
+    if (!updatedUser) {
+      throw new Error(`User with ID ${userId} not found`);
+    }
+
+    return updatedUser;
+  }
+
   async refreshAccessToken(user: User): Promise<string> {
     const response = await firstValueFrom(
       this.httpService.post(
@@ -121,5 +143,35 @@ export class UserService {
       );
 
     return access_token;
+  }
+
+  async getConcertsForUser(user: User): Promise<Concert[]> {
+    const concerts: Concert[] = [];
+
+    const existingConcertIds = new Set(
+      (user.proposedConcerts || []).map((concert) => concert.ticketMasterId),
+    );
+
+    for (const artist of user.topArtists) {
+      try {
+        const artistConcerts =
+          await this.ticketmasterService.getConcertsByArtistName(
+            artist.artistName,
+          );
+
+        const newConcerts = artistConcerts.filter(
+          (concert) => !existingConcertIds.has(concert.ticketMasterId),
+        );
+
+        concerts.push(...newConcerts);
+      } catch (error) {
+        console.error(
+          `Error fetching concerts for ${artist.artistName}`,
+          error,
+        );
+      }
+    }
+
+    return concerts;
   }
 }
