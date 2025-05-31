@@ -164,6 +164,8 @@ export class UserService {
         );
 
         concerts.push(...newConcerts);
+
+        await this.sharedService.delay(1000);
       } catch (error) {
         console.error(
           `Error fetching concerts for ${artist.artistName}`,
