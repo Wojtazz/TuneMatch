@@ -10,6 +10,8 @@ import { UserModule } from './user/user.module';
 import { SpotifyModule } from './spotify/spotify.module';
 import { ScheduledTasksModule } from './scheduled-tasks/scheduled-tasks.module';
 import { ScheduleModule } from '@nestjs/schedule';
+import { TicketmasterModule } from './ticketmaster/ticketmaster.module';
+import { SharedModule } from './shared/shared.module';
 
 @Module({
   imports: [
@@ -26,6 +28,8 @@ import { ScheduleModule } from '@nestjs/schedule';
     UserModule,
     SpotifyModule,
     ScheduledTasksModule,
+    TicketmasterModule,
+    SharedModule,
   ],
   controllers: [AppController, SpotifyController],
   providers: [AppService, SpotifyService],
