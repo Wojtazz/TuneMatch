@@ -7,6 +7,6 @@ export class TicketmasterController {
 
   @Get()
   async fetchConcerts() {
-    return this.ticketmasterService.getConcertsByArtistName('The Weekend');
+    return this.ticketmasterService.getConcertsByArtistName('Yung Lean', 'PL');
   }
 }

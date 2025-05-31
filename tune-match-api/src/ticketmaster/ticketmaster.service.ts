@@ -5,13 +5,19 @@ import { Concert } from './ticketmaster.interface';
 
 @Injectable()
 export class TicketmasterService {
-  async getConcertsByArtistName(name: string): Promise<Concert[]> {
+  async getConcertsByArtistName(
+    name: string,
+    countryCodes: string | string[],
+  ): Promise<Concert[]> {
     const response = await axios.get(staticConfig.TICKETMASTER_EVENTS_URL, {
       params: {
         keyword: name,
         apikey: process.env.TICKETMASTER_API_KEY,
         startDateTime: new Date().toISOString().split('.')[0] + 'Z',
         segmentId: 'KZFzniwnSyZfZ7v7nJ',
+        countryCode: Array.isArray(countryCodes)
+          ? countryCodes.join(',')
+          : countryCodes,
       },
     });
 

@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { User } from './user.schema';
@@ -20,6 +20,8 @@ export class UserService {
     private readonly ticketmasterService: TicketmasterService,
     private readonly sharedService: SharedService,
   ) {}
+
+  private readonly logger = new Logger(UserService.name);
 
   async createUser(userData: UserDto): Promise<User> {
     return await this.saveOrUpdateUser(userData);
@@ -148,6 +150,12 @@ export class UserService {
   async getConcertsForUser(user: User): Promise<Concert[]> {
     const concerts: Concert[] = [];
 
+    const userCountryCode = user.country;
+    const neighboringCountryCodes =
+      await this.sharedService.getNeighboringCountryCodes(userCountryCode);
+
+    const searchCountryCodes = [userCountryCode, ...neighboringCountryCodes];
+
     const existingConcertIds = new Set(
       (user.proposedConcerts || []).map((concert) => concert.ticketMasterId),
     );
@@ -157,6 +165,7 @@ export class UserService {
         const artistConcerts =
           await this.ticketmasterService.getConcertsByArtistName(
             artist.artistName,
+            searchCountryCodes,
           );
 
         const newConcerts = artistConcerts.filter(
@@ -175,5 +184,59 @@ export class UserService {
     }
 
     return concerts;
+  }
+
+  async matchUser(user: User): Promise<void> {
+    const currentUser = await this.userModel.findById(user._id);
+    if (!currentUser) throw new Error('User not found');
+
+    this.logger.debug(`Matching users for ${user.displayName}`);
+
+    const ticketmasterIds = currentUser.proposedConcerts.map(
+      (concert) => concert.ticketMasterId,
+    );
+
+    const users = await this.userModel.find().exec();
+    let matchedAmount = 0;
+    for (const matchUser of users) {
+      if (matchUser._id.toString() !== currentUser._id.toString()) {
+        const matchUserTicketmasterIds = matchUser.proposedConcerts.map(
+          (concert) => concert.ticketMasterId,
+        );
+
+        const userConcertSet = new Set(ticketmasterIds);
+
+        const commonConcerts = matchUserTicketmasterIds.filter((id) =>
+          userConcertSet.has(id),
+        );
+
+        if (commonConcerts.length > 0) {
+          matchedAmount++;
+
+          const sharedConcerts = currentUser.proposedConcerts.filter(
+            (concert) => commonConcerts.includes(concert.ticketMasterId),
+          );
+
+          const matchedUserIndex = currentUser.matchedUsers.findIndex(
+            (u) => u._id.toString() === matchUser._id.toString(),
+          );
+
+          if (matchedUserIndex !== -1) {
+            currentUser.matchedUsers[matchedUserIndex].matchedConcerts =
+              sharedConcerts;
+          } else {
+            currentUser.matchedUsers.push({
+              _id: matchUser._id.toString(),
+              displayName: matchUser.displayName,
+              matchedConcerts: sharedConcerts,
+            });
+          }
+        }
+      }
+    }
+
+    this.logger.debug(`Matched ${matchedAmount} users for ${user.displayName}`);
+
+    await currentUser.save();
   }
 }

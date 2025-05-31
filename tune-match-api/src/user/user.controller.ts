@@ -15,16 +15,7 @@ export class UserController {
 
   @Get()
   async test() {
-    const users: User[] = await this.userModel.find().exec();
-
-    for (const user of users) {
-      const concerts = await this.userService.getConcertsForUser(user);
-
-      if (concerts.length > 0) {
-        await this.userService.updateUser(user._id as unknown as string, {
-          $push: { proposedConcerts: { $each: concerts } },
-        });
-      }
-    }
+    const users = await this.userModel.find().exec();
+    await this.userService.matchUser(users[0]);
   }
 }
