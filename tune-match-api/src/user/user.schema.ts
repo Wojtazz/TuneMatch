@@ -2,6 +2,7 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose from 'mongoose';
 import { Artist, Track } from 'src/spotify/spotify.interface';
 import { Concert } from 'src/ticketmaster/ticketmaster.interface';
+import { MatchedUser } from './user.interface';
 
 @Schema()
 export class User {
@@ -23,6 +24,8 @@ export class User {
   topTracks: Track[];
   @Prop()
   proposedConcerts?: Concert[];
+  @Prop()
+  matchedUsers?: MatchedUser[];
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

@@ -89,4 +89,35 @@ export class ScheduledTasksService {
 
     this.logger.debug(`Finished updating top tracks`);
   }
+
+  @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
+  async addConcertsForUsers(): Promise<void> {
+    const users: User[] = await this.userModel.find().exec();
+    this.logger.debug(`Adding concerts for ${users.length} users`);
+
+    for (const user of users) {
+      const concerts = await this.userService.getConcertsForUser(user);
+
+      this.logger.debug(
+        `Found ${concerts.length} concerts for ${user.displayName}`,
+      );
+
+      if (concerts.length > 0) {
+        await this.userService.updateUser(user._id as unknown as string, {
+          $push: { proposedConcerts: { $each: concerts } },
+        });
+      }
+    }
+
+    this.logger.debug('Finished adding concerts');
+  }
+
+  @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
+  async matchUsers(): Promise<void> {
+    const users: User[] = await this.userModel.find().exec();
+
+    for (const user of users) {
+      await this.userService.matchUser(user);
+    }
+  }
 }
